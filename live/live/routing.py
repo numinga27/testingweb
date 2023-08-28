@@ -1,6 +1,7 @@
-from channels.routing import ProtocolTypeRouter
-from live.liveflash.routing import websockets
+from django.urls import path
+from liveflash.consumer import YourConsumer
 
-application = ProtocolTypeRouter({
-    "websocket": websockets,
-})
+websocket_urlpatterns = [
+       path(r'ws/my_consumer/$', YourConsumer.as_asgi()),
+   ]
+   

@@ -51,8 +51,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'live.urls'
-
+# ROOT_URLCONF = 'live.urls'
+# ROOT_URLCONF = 'live.routing'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'live.wsgi.application'
+# WSGI_APPLICATION = 'live.wsgi.application'
 
 
 # Database
@@ -92,15 +92,11 @@ DATABASES = {
     }
 }
 # Конфигурация Channels
-ASGI_APPLICATION = "live.routing.application"
-
+ASGI_APPLICATION = "live.asgi.application"
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": 'localhost',
-            "symmetric_encryption_keys": 'SECRET_KEY',
-        },
+        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'ROUTING': 'live.routing.channel_routing',
     },
 }
 
