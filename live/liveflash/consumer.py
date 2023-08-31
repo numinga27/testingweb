@@ -23,8 +23,10 @@ class YourConsumer(AsyncWebsocketConsumer):
         # Выполняется при получении данных от клиента
         pass
 
-    async def send_message(self):
-        # Получение данных из внешнего источника
+    async def send_updated_data(self, event):
+        Tournament.objects.all().delete()
+        Events.objects.all().delete()
+    # Получение данных из внешнего источника
         url = "https://flashlive-sports.p.rapidapi.com/v1/events/live-list"
         headers = {
             'X-RapidAPI-Key': "c68d4d6ac2mshe98277d48f502dbp188062jsn10858273d528",
@@ -40,6 +42,8 @@ class YourConsumer(AsyncWebsocketConsumer):
         parsed_data = response.json()
 
         # Выбор только нужных полей и сохранение данных в базу данных
+    
+        
         for item in parsed_data['DATA']:
             tournament = Tournament()
             tournament.name = item['NAME']
@@ -47,14 +51,16 @@ class YourConsumer(AsyncWebsocketConsumer):
             tournament.tournament_imng = item['TOURNAMENT_IMAGE']
             tournament.TOURNAMENT_TEMPLATE_ID = item['TOURNAMENT_TEMPLATE_ID']
             tournament.save()
+            
 
             for event in item['EVENTS']:
+        
                 data = {
                     'event_id': event['EVENT_ID'],
                     'start_time': event['START_TIME'],
                     'start_utime': event['START_UTIME'],
                     'game_time': event['GAME_TIME'],
-                     'short_name_away': event['SHORTNAME_AWAY'],
+                    'short_name_away': event['SHORTNAME_AWAY'],
                     'away_name': event['AWAY_NAME'],
                     'away_score_current': event['AWAY_SCORE_CURRENT'],
                     'away_score_part_1': event['AWAY_SCORE_PART_1'],
@@ -75,8 +81,14 @@ class YourConsumer(AsyncWebsocketConsumer):
                 else:
                     print(serializer.errors)
 
-        # Отправка данных на страницу клиента
-        await self.send(text_data=parsed_data)
+        # Удаление старых событий
+        # Events.objects.exclude(event_id__in=event_ids).delete()
+
+        # # Удаление старых турниров
+        # Tournament.objects.exclude(TOURNAMENT_TEMPLATE_ID__in=tournament_ids).delete()
+
+        # Отправка только обновленных данных клиентам
+        await self.send(text_data=json.dumps(parsed_data))
 
         # Повторение процесса через 5 секунд
         await asyncio.sleep(5)
